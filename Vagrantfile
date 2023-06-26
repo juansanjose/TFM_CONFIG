@@ -53,6 +53,33 @@ Vagrant.configure("2") do |config|
 
    
   end
+config.vm.define "gNB-falso" do |cfg|
+    cfg.vm.box = "fasmat/ubuntu2204-desktop"
+    cfg.vm.hostname = "gNB-falso"
+    
+   
+    cfg.vm.network "private_network", ip: "192.168.152.88",gateway: "192.168.152.10", dns: "8.8.8.8" 
+
+    cfg.vm.provider "virtualbox" do |vb, override|
+      vb.gui = true
+      vb.name = "gNB-falso"
+      vb.customize ["modifyvm", :id, "--memory", 2048]
+      vb.customize ["modifyvm", :id, "--cpus", 2]
+      vb.customize ["modifyvm", :id, "--vram", "32"]
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["setextradata", "global", "GUI/SuppressMessages", "all" ]
+    end
+      cfg.vm.provision 'shell',run: "always", inline: <<-SHELL
+      # sudo ip route del default via 10.0.2.2
+      # sudo ip route add default via 192.168.152.10
+      sudo ip route add 192.168.0.0/16 via 192.168.152.10
+
+    SHELL
+
+   
+  end
   config.vm.define "CORE" do |cfg|
     cfg.vm.box = "fasmat/ubuntu2204-desktop"
     cfg.vm.hostname = "CORE"
